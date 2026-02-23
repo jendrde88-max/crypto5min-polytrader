@@ -1,0 +1,18 @@
+services:
+  crypto5min:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crypto5min-polytrader
+    restart: unless-stopped
+    env_file:
+      - ./config/.env
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config
+      - ./releases:/app/releases
+    ports:
+      # Public dashboard port (host) -> container port (8601)
+      # Set C5_DASHBOARD_PUBLIC_PORT in config/.env to avoid conflicts (e.g., copybot using 8602).
+      - "${C5_DASHBOARD_PUBLIC_PORT:-8602}:8601"

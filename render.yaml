@@ -1,0 +1,48 @@
+# render.yaml — Render.com deployment config for crypto5min-polytrader
+# Docs: https://render.com/docs/infrastructure-as-code
+#
+# One-click deploy:
+#   1. Fork this repo to your own GitHub account
+#   2. Go to https://render.com → New → Blueprint
+#   3. Connect your fork — Render reads this file automatically
+#   4. Set required environment variables in the Render dashboard
+#   5. Done — no SSH, no terminal required
+
+services:
+  - type: web
+    name: crypto5min-polytrader
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    # Render auto-injects PORT — the Dockerfile/app must listen on $PORT
+    envVars:
+      # ── Required: Polymarket credentials ──────────────────────────────────
+      # Set these in Render dashboard → Environment → Secret Files or Env Vars
+      # NEVER commit real values here.
+      - key: POLY_PRIVATE_KEY
+        value: ""           # paste your 0x private key in Render dashboard
+      - key: POLY_FUNDER_ADDRESS
+        value: ""           # leave blank for MetaMask EOA accounts
+      - key: POLY_SIG_TYPE
+        value: "0"          # 0=EOA, 1=POLY_PROXY (Email/Google), 2=GNOSIS_SAFE
+
+      # ── Required: Bot credentials ──────────────────────────────────────────
+      - key: DASHBOARD_PASSWORD
+        value: ""           # set a strong password
+
+      # ── Optional: 0x API key for auto gas top-up ──────────────────────────
+      - key: ZEROX_API_KEY
+        value: ""
+
+      # ── Optional: Trading settings ────────────────────────────────────────
+      - key: MAX_USDC_PER_TRADE
+        value: "5"
+      - key: START_MODE
+        value: "paper"      # paper | dry | live
+
+    disk:
+      name: data
+      mountPath: /app/data
+      sizeGB: 1
+
+    healthCheckPath: /health
+    autoDeploy: true

@@ -1,0 +1,137 @@
+{# Ops & Logs panel (server-rendered partial, HTMX-polled) #}
+
+{% if env_warnings %}
+<div class="notice warn mb-12">
+  <div>
+    <b>&#9888; Missing .env keys ({{ env_warnings|length }}):</b>
+    your <span class="mono">config/.env</span> is missing keys added in a recent update.
+    Add these to <span class="mono">config/.env</span> and restart the bot.
+    <table class="mt-10">
+      <thead>
+        <tr><th>Key</th><th>Default value</th></tr>
+      </thead>
+      <tbody>
+        {% for k, v in env_warnings %}
+          <tr>
+            <td class="mono">{{ k }}</td>
+            <td class="mono muted">{{ v }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <span class="badge">.env</span>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="hd">
+    <h2>Ops &amp; Logs</h2>
+    <div class="hd-badge mono">updated: {{ updated_ts or '—' }}</div>
+  </div>
+  <div class="bd small">
+    Live view of recent background operations (redeem, reconcile, settle, sell, cancels). Refreshes automatically.
+  </div>
+</div>
+
+<div class="grid-2 mt-12">
+  <div class="card">
+    <div class="hd">
+      <h2>Auto-redeem</h2>
+      <div class="hd-badge mono">
+        {% if auto_redeem_enabled %}
+          <span class="tag live tag-sm">enabled</span>
+        {% else %}
+          <span class="tag off tag-sm">disabled</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="bd">
+      {% if auto_redeem_enabled and (not polymarket_mode_enabled) %}
+        <div class="notice warn mb-12">
+          <div>
+            <b>Auto-redeem won’t run yet.</b><br />
+            Trading mode appears OFF, so the background loop won’t attempt on-chain redemption.
+          </div>
+          <span class="badge">mode</span>
+        </div>
+      {% endif %}
+
+      <div class="small">
+        <div><b>Last auto-redeem run</b></div>
+        {% if redeem and redeem is mapping %}
+          <div class="mono mt-6">
+            ok: <b>{{ redeem.get('ok') }}</b><br />
+            skipped: {{ redeem.get('skipped') }}{% if redeem.get('reason') %} ({{ redeem.get('reason') }}){% endif %}<br />
+            dry_run: {{ redeem.get('dry_run') }}<br />
+            candidates: {{ redeem.get('candidates') }} | submitted: {{ redeem.get('submitted') }} | planned: {{ redeem.get('planned') }}
+          </div>
+        {% else %}
+          <div class="muted mt-6">No auto-redeem status yet (wait a minute).</div>
+        {% endif %}
+
+        <div class="mt-14"><b>Last reconcile</b></div>
+        {% if redeem_reconcile and redeem_reconcile is mapping %}
+          <div class="mono mt-6">
+            ok: <b>{{ redeem_reconcile.get('ok') }}</b><br />
+            checked: {{ redeem_reconcile.get('checked') }} | updated: {{ redeem_reconcile.get('updated') }} | pending: {{ redeem_reconcile.get('pending') }}
+          </div>
+        {% else %}
+          <div class="muted mt-6">No reconcile status yet.</div>
+        {% endif %}
+
+        <div class="mt-14"><b>What “working” looks like</b></div>
+        <ul class="mt-6">
+          <li>Events appear with action <span class="mono">redeem_positions</span> and later <span class="mono">redeem_reconcile</span>.</li>
+          <li>Trades show <span class="tag live tag-sm">redeeming</span> then <span class="tag live tag-sm">redeemed</span> when a win is claimed.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd">
+      <h2>Recent ops events</h2>
+      <div class="hd-badge">showing last {{ events_limit or 0 }}</div>
+    </div>
+
+    <div class="bd">
+      {% if (events is not none) and (events|length > 0) %}
+        <div class="ops-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th class="nowrap">time</th>
+                <th>action</th>
+                <th class="nowrap">status</th>
+                <th>summary</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for e in events %}
+                <tr>
+                  <td class="mono nowrap">{{ e.get('ts','—') }}</td>
+                  <td class="mono">{{ e.get('action','—') }}</td>
+                  <td class="nowrap">
+                    {% if e.get('ok') is sameas true %}
+                      <span class="tag live tag-sm">ok</span>
+                    {% elif e.get('ok') is sameas false %}
+                      <span class="tag danger tag-sm">fail</span>
+                    {% else %}
+                      <span class="tag tag-sm">—</span>
+                    {% endif %}
+                  </td>
+                  <td class="muted">{{ e.get('summary','') }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="small mt-10">Source: <span class="mono">logs/poly_ops.json</span></div>
+      {% else %}
+        <div class="muted">No ops events yet. Once the bot runs background tasks, entries will appear here.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>

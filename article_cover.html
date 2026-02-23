@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Article Cover — I Used to Pour Concrete. Now I Build Trading Bots.</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Space Grotesk', sans-serif;
+    color: #fff;
+    padding: 40px;
+  }
+
+  .info {
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: #666;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .info span { color: #0ff; }
+
+  /* 5:2 ratio = 1200 x 480 */
+  .cover {
+    width: 1200px;
+    height: 480px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #0d1117;
+  }
+
+  /* Concrete texture layer — grainy noise */
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-conic-gradient(#1a1a1a 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
+      linear-gradient(135deg, #0d1117 0%, #111820 40%, #0d1117 100%);
+    opacity: 0.9;
+    z-index: 1;
+  }
+
+  /* Diagonal split — concrete left, terminal right */
+  .cover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(160deg, transparent 0%, rgba(0, 255, 136, 0.03) 50%, rgba(0, 255, 136, 0.06) 100%);
+    clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
+    z-index: 2;
+  }
+
+  .cover-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    height: 100%;
+    padding: 48px 56px;
+  }
+
+  .left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-right: 40px;
+  }
+
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #00ff88;
+    margin-bottom: 20px;
+    opacity: 0.9;
+  }
+
+  .title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #f0f0f0;
+    margin-bottom: 20px;
+  }
+
+  .title .highlight {
+    color: #00ff88;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    color: #7a8599;
+    line-height: 1.5;
+    max-width: 420px;
+  }
+
+  .right {
+    width: 340px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 8px;
+    padding-left: 20px;
+  }
+
+  /* Fake terminal lines */
+  .term-line {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #3d4f5f;
+    white-space: nowrap;
+    text-align: right;
+    opacity: 0;
+    animation: fadeIn 0.4s ease forwards;
+  }
+  .term-line:nth-child(1) { animation-delay: 0.2s; }
+  .term-line:nth-child(2) { animation-delay: 0.4s; }
+  .term-line:nth-child(3) { animation-delay: 0.6s; }
+  .term-line:nth-child(4) { animation-delay: 0.8s; color: #00ff88; opacity: 0; }
+  .term-line:nth-child(5) { animation-delay: 1.0s; }
+  .term-line:nth-child(6) { animation-delay: 1.2s; }
+  .term-line:nth-child(7) { animation-delay: 1.4s; color: #00ff88; opacity: 0; }
+  .term-line:nth-child(8) { animation-delay: 1.6s; }
+  .term-line:nth-child(9) { animation-delay: 1.8s; color: #ff6b6b; opacity: 0; }
+  .term-line:nth-child(10) { animation-delay: 2.0s; color: #00ff88; opacity: 0; }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  .term-line .g { color: #00ff88; }
+  .term-line .y { color: #ffc107; }
+  .term-line .d { color: #3d4f5f; }
+
+  /* Accent bar at bottom */
+  .accent-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #00ff88 0%, #0ff 50%, #00ff88 100%);
+    z-index: 10;
+  }
+
+  /* Corner brand */
+  .brand {
+    position: absolute;
+    bottom: 20px;
+    left: 56px;
+    z-index: 10;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #3d4f5f;
+    letter-spacing: 1px;
+  }
+  .brand span { color: #00ff88; }
+
+  /* Decorative grid dots */
+  .dots {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: repeat(5, 6px);
+    gap: 8px;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #1a2332;
+  }
+  .dot.active { background: #00ff88; }
+
+  /* Save instructions */
+  .instructions {
+    margin-top: 32px;
+    font-size: 13px;
+    color: #555;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+    line-height: 1.8;
+  }
+  .instructions code {
+    background: #1a1a1a;
+    padding: 2px 8px;
+    border-radius: 3px;
+    color: #0ff;
+  }
+</style>
+</head>
+<body>
+
+<div class="info">Whop Article Cover &mdash; <span>5:2 ratio (1200 &times; 480)</span></div>
+
+<div class="cover">
+  <div class="cover-content">
+    <div class="left">
+      <div class="tag">From concrete to code</div>
+      <div class="title">
+        I Used to Pour Concrete.<br>
+        Now I Build <span class="highlight">Trading Bots.</span>
+      </div>
+      <div class="subtitle">
+        How I went from zero coding to shipping two Polymarket bots on Whop.
+      </div>
+    </div>
+    <div class="right">
+      <div class="term-line"><span class="d">$</span> docker compose up -d</div>
+      <div class="term-line"><span class="d">[runner]</span> fetching candles...</div>
+      <div class="term-line"><span class="d">[model]</span> predict_latest: 124 candles</div>
+      <div class="term-line"><span class="g">[signal]</span> direction=UP conf=0.72</div>
+      <div class="term-line"><span class="d">[paper]</span> simulated BUY $25.00</div>
+      <div class="term-line"><span class="d">[runner]</span> sleeping 300s...</div>
+      <div class="term-line"><span class="g">[result]</span> WIN +$22.75</div>
+      <div class="term-line"><span class="d">[redeem]</span> claiming on-chain...</div>
+      <div class="term-line"><span class="y">[equity]</span> $2,026.55</div>
+      <div class="term-line"><span class="g">[status]</span> ok</div>
+    </div>
+  </div>
+
+  <div class="dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot active"></div><div class="dot"></div>
+  </div>
+
+  <div class="brand"><span>@Tradi3</span> &middot; Crypto5min PolyTrader</div>
+  <div class="accent-bar"></div>
+</div>
+
+<div class="instructions">
+  Right-click the image above &rarr; <code>Inspect</code> &rarr; select the <code>.cover</code> div<br>
+  &rarr; right-click &rarr; <code>Capture node screenshot</code> to save as PNG.<br><br>
+  Or use a screenshot tool to capture the 1200&times;480 box above.
+</div>
+
+</body>
+</html>

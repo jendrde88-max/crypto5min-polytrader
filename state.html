@@ -1,0 +1,116 @@
+{% if state and state.get('status') == 'ok' %}
+  {% set symbols = state.get('symbols') %}
+  {% if symbols %}
+    {% for sym, st in symbols.items() %}
+      {% set d = st.get('direction','') %}
+      <div class="metric full signal-sym">
+        <div class="label">{{ sym }}</div>
+        <div class="signal-dir-sm mono {% if d=='UP' %}up{% else %}down{% endif %}">
+          {% if d=='UP' %}&#8593;{% else %}&#8595;{% endif %} {{ d }}
+        </div>
+        <div class="small signal-sub">
+          conf <span class="mono">{{ '%.3f'|format(st.get('confidence', 0)) }}</span>
+          &middot; price <span class="mono">${{ '%.2f'|format(st.get('price', 0)) }}</span>
+        </div>
+        {% if st.get('window_slug') %}
+          <div class="small mono signal-slug">{{ st.get('window_slug') }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    {% set d = state.get('direction','') %}
+    <div class="signal-hero">
+      <div class="signal-dir mono {% if d=='UP' %}up{% else %}down{% endif %}">
+        {% if d=='UP' %}&#8593;{% else %}&#8595;{% endif %} {{ d }}
+      </div>
+      {% if state.get('strong') %}
+        <div class="signal-sub"><span class="tag live">strong signal</span></div>
+      {% endif %}
+    </div>
+    <div class="kpi">
+      <div class="metric">
+        <div class="label">Confidence</div>
+        <div class="value mono">{{ '%.3f'|format(state.get('confidence', 0)) }}</div>
+      </div>
+      <div class="metric">
+        <div class="label">Price</div>
+        <div class="value mono gold" id="liveSpotPrice">${{ '%.2f'|format(state.get('price', 0)) }}</div>
+      </div>
+    </div>
+    {% if state.get('window_slug') %}
+      <div class="small mt-10 signal-hero">
+        window <span class="mono">{{ state.get('window_slug') }}</span>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <div class="small mt-12">
+    Threshold <span class="mono">{{ cfg.confidence_threshold }}</span> · from Coinbase 5-min candles
+    {% if state.get('ts') %}
+      · updated <span class="mono" title="{{ state.get('ts') }}">{{ state.get('ts')|int }}</span>
+      <script>(function(){var el=document.currentScript.previousElementSibling;if(!el)return;var ts=parseInt(el.textContent);if(!ts||ts<1e9)return;var ago=Math.max(0,Math.floor(Date.now()/1000-ts));if(ago<60)el.textContent=ago+'s ago';else if(ago<3600)el.textContent=Math.floor(ago/60)+'m ago';else el.textContent=Math.floor(ago/3600)+'h ago';})()</script>
+    {% endif %}
+  </div>
+
+  {% if state.get('polymarket') %}
+    {% set pm = state.get('polymarket') %}
+    <div class="small mt-10">
+      Polymarket:
+      {% if pm.get('dry_run') %}<span class="tag warn tag-sm">dry-run</span>{% else %}<span class="tag live tag-sm">live</span>{% endif %}
+      {% if pm.get('placed') %}
+        &middot; <span class="mono">order placed</span>
+        {% if pm.get('direction') %}
+          &middot; <span class="mono">{{ pm.get('direction') }}</span>
+        {% endif %}
+        {% if pm.get('arb') %}
+          {% if pm.get('arb_sum_asks') %}
+            &middot; sum asks <span class="mono">{{ '%.4f'|format(pm.get('arb_sum_asks')|float) }}</span>
+          {% endif %}
+          {% if pm.get('arb_edge_per_share') %}
+            &middot; edge <span class="mono">{{ '%.4f'|format(pm.get('arb_edge_per_share')|float) }}</span>
+          {% endif %}
+        {% endif %}
+      {% elif pm.get('skipped') %}
+        &middot; <span class="mono">skipped</span>{% if pm.get('reason') %} ({{ pm.get('reason') }}){% endif %}
+        {% if pm.get('arb_diag') %}
+          {% set ad = pm.get('arb_diag') %}
+          {% if ad.get('sum_asks') %}
+            &middot; sum asks <span class="mono">{{ '%.4f'|format(ad.get('sum_asks')|float) }}</span>
+          {% endif %}
+          {% if ad.get('edge_per_share') %}
+            &middot; edge <span class="mono">{{ '%.4f'|format(ad.get('edge_per_share')|float) }}</span>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+      {% if pm.get('window_slug') %}
+        &middot; <span class="mono tag-sm">{{ pm.get('window_slug') }}</span>
+      {% endif %}
+    </div>
+  {% endif %}
+{% elif state and state.get('status') == 'not_enough_data' %}
+  <div class="status-block">
+    <div class="status-icon">&#128200;</div>
+    <div class="small status-msg">Fetching candles for <span class="mono">{{ cfg.symbol }}</span>…</div>
+  </div>
+{% elif state and state.get('status') == 'paused' %}
+  <div class="status-block">
+    <div class="status-icon">&#9208;&#65039;</div>
+    <div class="small status-msg">Bot is stopped. Click <span class="mono">start</span> above to resume.</div>
+  </div>
+{% elif state and state.get('status') == 'resuming' %}
+  <div class="status-block">
+    <div class="status-icon">&#9654;&#65039;</div>
+    <div class="small status-msg">Resuming&#8230; fetching candles and recalculating.</div>
+  </div>
+{% elif state and state.get('status') == 'running' %}
+  <div class="status-block">
+    <div class="status-icon">&#9203;</div>
+    <div class="small status-msg">Running&#8230; fetching candles for <span class="mono">{{ cfg.symbol }}</span>.</div>
+  </div>
+{% elif state and state.get('status') == 'error' %}
+  <div class="small danger">Error: {{ state.get('error') }}</div>
+{% else %}
+  <div class="status-block">
+    <div class="small">Waiting for first prediction&#8230;</div>
+  </div>
+{% endif %}

@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shared Banner — Crypto5min + PolyTrader Copy Bot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #05060a;
+      --bg2: #080910;
+      --panel: rgba(255,255,255,0.07);
+      --line: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.55);
+      --gold: #f7d774;
+      --mint: #68f6c7;
+      --red: #ff5b6e;
+      --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --serif: Fraunces, ui-serif, Georgia, serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: #111;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: var(--text);
+      font-family: var(--serif);
+    }
+
+    /* Master artboard */
+    .artboard {
+      width: 1920px;
+      height: 1080px;
+      background:
+        radial-gradient(1200px 720px at 12% 10%, rgba(247,215,116,0.08), transparent 60%),
+        radial-gradient(900px 600px at 90% 18%, rgba(104,246,199,0.06), transparent 62%),
+        radial-gradient(1100px 800px at 60% 105%, rgba(255,91,110,0.05), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.03), transparent 25%),
+        var(--bg);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 22px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+    }
+
+    /* Subtle grid */
+    .artboard::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.35;
+      pointer-events: none;
+      -webkit-mask-image: radial-gradient(circle at 30% 20%, rgba(0,0,0,1), rgba(0,0,0,0) 70%);
+      mask-image: radial-gradient(circle at 30% 20%, rgba(0,0,0,1), rgba(0,0,0,0) 70%);
+    }
+
+    /* Layout */
+    .wrap {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 1.02fr 0.98fr;
+      gap: 0;
+    }
+
+    /* Left: old bot image panel */
+    .left {
+      padding: 54px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand .mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--gold), rgba(247,215,116,0.55));
+      color: #05060a;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    }
+
+    .brand .txt {
+      line-height: 1.05;
+    }
+
+    .brand .txt .top {
+      font-size: 14px;
+      font-family: var(--mono);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.70);
+    }
+
+    .brand .txt .name {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff 20%, var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .frame {
+      margin-top: 26px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .oldimg {
+      width: 100%;
+      height: 100%;
+      max-height: 760px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .oldimg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(1.05) contrast(1.03);
+      opacity: 0.95;
+    }
+
+    .oldimg .fallback {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+      color: rgba(255,255,255,0.65);
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.5;
+      pointer-events: none;
+    }
+
+    .hidden { display: none !important; }
+    .pillrow-end { justify-content: flex-end; }
+
+    .fallback-title { font-weight: 700; color: rgba(255,255,255,0.88); }
+    .mt-8 { margin-top: 8px; }
+    .mt-6 { margin-top: 6px; }
+    .op-90 { opacity: 0.9; }
+
+    .pillrow {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-top: 18px;
+    }
+
+    .pill {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.70);
+    }
+
+    .pill b { color: var(--text); font-weight: 700; }
+    .pill.gold { border-color: rgba(247,215,116,0.22); color: rgba(247,215,116,0.92); background: rgba(247,215,116,0.08); }
+    .pill.mint { border-color: rgba(104,246,199,0.18); color: rgba(104,246,199,0.92); background: rgba(104,246,199,0.08); }
+
+    /* Right: shared headline / value props */
+    .right {
+      padding: 54px 54px 54px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 22px;
+      padding: 28px 28px 22px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background: radial-gradient(800px 420px at 10% 0%, rgba(247,215,116,0.10), transparent 60%);
+      pointer-events: none;
+    }
+
+    h1 {
+      position: relative;
+      margin: 0;
+      font-size: 56px;
+      line-height: 1.02;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .sub {
+      position: relative;
+      margin-top: 14px;
+      font-family: var(--mono);
+      color: rgba(255,255,255,0.65);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .sub b { color: rgba(255,255,255,0.88); }
+
+    .kickers {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .k {
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+      border-radius: 16px;
+      padding: 14px 14px 12px;
+    }
+
+    .k .t {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+    }
+
+    .k .v {
+      margin-top: 7px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.5;
+    }
+
+    .k .v .mint { color: var(--mint); font-weight: 700; }
+    .k .v .gold { color: var(--gold); font-weight: 700; }
+
+    .footer {
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.55);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 0 3px rgba(104,246,199,0.12);
+    }
+
+    .disclaimer {
+      color: rgba(255,255,255,0.52);
+      font-size: 10px;
+      text-align: right;
+    }
+
+    /* Crop guides (toggle by adding ?guides=1) */
+    .guides { display: none; }
+    .guide {
+      position: absolute;
+      border: 2px dashed rgba(255,255,255,0.25);
+      border-radius: 18px;
+      pointer-events: none;
+    }
+    .g1 { left: 120px; top: 160px; width: 1680px; height: 760px; }
+    /* 1200x630 safe crop centered */
+    .g2 { left: 360px; top: 225px; width: 1200px; height: 630px; border-color: rgba(247,215,116,0.35); }
+    /* 1500x500 safe crop centered */
+    .g3 { left: 210px; top: 290px; width: 1500px; height: 500px; border-color: rgba(104,246,199,0.32); }
+
+    @media (max-width: 2000px) {
+      body { padding: 12px; }
+      .artboard { transform: scale(0.5); transform-origin: top center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="artboard" id="artboard">
+    <div class="wrap">
+      <div class="left">
+        <div class="brand">
+          <div class="mark">C5</div>
+          <div class="txt">
+            <div class="top">Shared Banner</div>
+            <div class="name">Crypto5min + PolyTrader</div>
+          </div>
+        </div>
+
+        <div class="frame">
+          <div class="oldimg">
+            <!-- Replace with your old bot image file -->
+            <img src="assets/old-bot.png" alt="Old bot hero" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');" />
+            <div class="fallback hidden">
+              <div>
+                <div class="fallback-title">Add your old bot image</div>
+                <div class="mt-8 op-90">Place it at:</div>
+                <div class="mt-6">tools/whop_marketing/assets/old-bot.png</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pillrow">
+          <div class="pill gold"><b>5-min</b> windows</div>
+          <div class="pill mint"><b>Auto-redeem</b> winners</div>
+          <div class="pill">Dashboard + Ops logs</div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="card">
+          <h1>Trade BTC<br/>every 5 minutes<br/>with safety rails.</h1>
+          <div class="sub">
+            Two products, one look:
+            <b>Crypto5min PolyTrader</b> (strategy + dashboard) and your <b>Copy Trading Bot</b>.
+            Built for clarity: <b>signals</b>, <b>risk controls</b>, and <b>ops visibility</b>.
+          </div>
+
+          <div class="kickers">
+            <div class="k">
+              <div class="t">Noob-friendly</div>
+              <div class="v">Gas warnings, redeem status, and a terminal-style log tab so users can see what’s happening.</div>
+            </div>
+            <div class="k">
+              <div class="t">Operational</div>
+              <div class="v">Auto loops are observable via <span class="mint">Ops Events</span> and state snapshots (no guessing).</div>
+            </div>
+            <div class="k">
+              <div class="t">Safety rails</div>
+              <div class="v">Confidence gating, bet caps, cooldowns, and explicit “unsafe” modes for advanced users only.</div>
+            </div>
+            <div class="k">
+              <div class="t">EOA-only</div>
+              <div class="v">On-chain redeem/withdraw are designed for simple wallets (not Safe/multisig).</div>
+            </div>
+          </div>
+
+          <div class="footer">
+            <div class="badge"><span class="dot"></span> Live + Dry-run + Paper</div>
+            <div class="disclaimer">Not financial advice · trading involves risk</div>
+          </div>
+        </div>
+
+        <div class="pillrow pillrow-end">
+          <div class="pill">Whop-ready assets</div>
+          <div class="pill">1920×1080 master</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="guides" id="guides">
+      <div class="guide g1"></div>
+      <div class="guide g2"></div>
+      <div class="guide g3"></div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('guides') === '1') {
+        document.getElementById('guides').style.display = 'block';
+      }
+    })();
+  </script>
+</body>
+</html>
