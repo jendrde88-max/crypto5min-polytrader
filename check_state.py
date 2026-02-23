@@ -1,0 +1,12 @@
+import json
+s = json.load(open('/app/logs/state.json'))
+print('direction:', s.get('direction'))
+print('confidence:', s.get('confidence'))
+print('strong:', s.get('strong'))
+print('window:', s.get('window_slug'))
+pm = s.get('polymarket', {})
+print('poly placed:', pm.get('placed'))
+print('poly reason:', pm.get('reason'))
+print('poly snipe:', pm.get('snipe'))
+print('poly direction:', pm.get('direction'))
+print('poly confidence:', pm.get('confidence'))
